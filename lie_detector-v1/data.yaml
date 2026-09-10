@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../train/images
+test: ../test/images
+
+nc: 1
+names: ['Target']
+
+roboflow:
+  workspace: cliff-bear-s-workspace
+  project: my-first-project-zpwpu
+  version: 1
+  license: Private
+  url: https://app.roboflow.com/cliff-bear-s-workspace/my-first-project-zpwpu/1
