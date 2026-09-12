@@ -34,16 +34,20 @@ while cap.isOpened():
     roi_frame = frame[ymin:ymax, xmin:xmax]
 
     # 3. 使用 YOLO 模型對當前 ROI 畫面進行檢測
-    # conf=0.5 代表信心水準大於 50% 才顯示
-    results = model(roi_frame, conf=0.5, verbose=False)
+    # conf 為信心度， 滿足才納入
+    results = model.track(
+        roi_frame, 
+        conf=0.8, 
+        persist=True, 
+        tracker="bytetrack.yaml", 
+        verbose=False
+    )
     
-    # 4. 把檢測到的框畫在畫面上 (results[0].plot() 會回傳畫好框的影像)
+    # 4. 繪製BOX
     annotated_frame = results[0].plot()
 
-    # 5. 顯示即時追蹤畫面
     cv2.imshow("Lie Detector Tracking Test", annotated_frame)
 
-    # 6. 偵測鍵盤按鍵，按 'q' 離開
     if cv2.waitKey(30) & 0xFF == ord('q'):
         break
 
