@@ -17,7 +17,7 @@ class Tracker:
         assert self.cap.isOpened(), "讀取串流失敗"
 
         self.locked_id = None #鎖定的目標ID
-
+        self.first_lock_time = None # 紀錄第一次觸發 lock_initial_target 的時間
 
     def draw_BBOX(self,results):
 
@@ -25,41 +25,45 @@ class Tracker:
         return result
 
     def lock_initial_target(self, bgr_frame, boxes_xyxy, boxes_ids, boxes_confs, 
-                            conf_thresh=0.5, white_thresh=100):
-        """
-        找到「白色像素最多」的目標，作為鎖定的目標
+                                conf_thresh=0.5, white_thresh=100, min_area=50):
+            """
+            找到「白色像素最多」的目標，作為鎖定的目標
+            """
+            best_idx = None
+            best_area = 0  # 修正 1：正確宣告區域變數初始化
 
-        """
-        best_idx = None
-        best_white_ratio = 0  # 記錄目前找到的框裡，白色像素佔比最高的數值
+            # 白色目標範圍
+            lower_white = np.array([200, 200, 200], dtype=np.uint8)
+            upper_white = np.array([255, 255, 255], dtype=np.uint8)
 
+            for i, box in enumerate(boxes_xyxy):
+                if boxes_confs[i] < conf_thresh:
+                    continue  # 信心值太低的框，直接跳過，不列入候選
+                x1, y1, x2, y2 = map(int, box)
+                roi = bgr_frame[y1:y2, x1:x2]
+                if roi.size == 0:
+                    continue
 
+                # 先用顏色篩出白色區域的遮罩
+                white_mask = cv2.inRange(roi, lower_white, upper_white)
+                # 用輪廓找出白色區域
+                contours, _ = cv2.findContours(white_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        for i, box in enumerate(boxes_xyxy):
-            if boxes_confs[i] < conf_thresh:
-                continue  # 信心值太低的框，直接跳過，不列入候選
+                if not contours: # 防呆處理
+                    continue
+                largest_contour = max(contours, key=cv2.contourArea)
+                largest_area = cv2.contourArea(largest_contour)
 
-            x1, y1, x2, y2 = map(int, box)
-            roi = bgr_frame[y1:y2, x1:x2]  # 從原圖裁出這個框的範圍
-            if roi.size == 0:
-                continue
+                if largest_area > best_area:
+                    best_area = largest_area
+                    best_idx = i
 
-            # 算這個框裡面，有多少比例的像素是接近白色的
-            gray_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-            white_pixels = np.sum(gray_roi > white_thresh)
-            white_ratio = white_pixels / gray_roi.size  # 白色像素佔整個框的比例
+            # 修正 2：迴圈全部跑完、選出全畫面最大的白色候選後，才檢查門檻
+            if best_idx is None or best_area < min_area:
+                return None
 
-            # 背景假目標大多是沙色，白色比例會很低
-            # 真目標是全白，白色比例會明顯高很多
-            if white_ratio > best_white_ratio:
-                best_white_ratio = white_ratio
-                best_idx = i
-
-        if best_idx is None or best_white_ratio < 0.1:
-            # 一個夠白的框都找不到，代表這一幀目標可能被擋住了，先不要亂鎖
-            return None
-
-        return int(boxes_ids[best_idx])  # 回傳這個框對應的 track ID，之後就一路追這個ID
+            self.best_area = best_area  # 同步更新實例變數（若後續需要跨幀比較）
+            return int(boxes_ids[best_idx])  # 回傳這個框對應的 track ID，之後就一路追這個ID
 
     def run(self):
         while self.cap.isOpened():
@@ -88,11 +92,23 @@ class Tracker:
 
 
             '''
-            鎖定目標
+            步驟 I:
+                找到「白色像素最多」的目標，作為鎖定目標
+            Note: 
+                只追蹤兩秒
             '''
-
-            if boxes is not None and boxes.id is not None:
+            if self.first_lock_time is None and boxes is not None and boxes.id is not None:
                 self.locked_id = self.lock_initial_target(
+                    bgr_frame=roi_frame,
+                    boxes_xyxy=boxes.xyxy.cpu().numpy(),
+                    boxes_ids=boxes.id.cpu().numpy().astype(int), # 從CPU轉numpy再以整數儲存
+                    boxes_confs=boxes.conf.cpu().numpy()
+                )
+                if self.locked_id is not None:
+                    self.first_lock_time = time.time()
+                    print("初次鎖定目標:", self.locked_id)
+            if self.first_lock_time and self.first_lock_time + 2 > time.time():
+                    self.locked_id = self.lock_initial_target(
                     bgr_frame=roi_frame,
                     boxes_xyxy=boxes.xyxy.cpu().numpy(),
                     boxes_ids=boxes.id.cpu().numpy().astype(int), # 從CPU轉numpy再以整數儲存
