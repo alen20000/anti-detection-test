@@ -14,10 +14,12 @@ class Tracker:
         print(f"模型載入成功，模型名稱：{self.names}")
         self.cap =  cv2.VideoCapture(source)
         assert self.cap.isOpened(), "讀取串流失敗"
-        pass
 
-    def draw_BBOX(self):
-        pass
+
+    def draw_BBOX(self,results):
+
+        result = results[0].plot()
+        return result
     def run(self):
         while self.cap.isOpened():
 
@@ -40,8 +42,10 @@ class Tracker:
                 tracker="botsort.yaml", 
                 verbose=False
             )
-            self.draw_BBOX(results[0].plot())
 
+            annotated_frame  = self.draw_BBOX(results)
+            cv2.imshow("Lie Detector Tracking Test", annotated_frame)
+            
             if cv2.waitKey(30) & 0xFF == ord('q'):
                 break
 
@@ -53,6 +57,6 @@ class Tracker:
 if __name__ == "__main__":
     my_model = "runs/detect/train-4/weights/best.pt"
     video_path = "videos/test_lie_detector.mp4"
-    Tracker(model=my_model,
+    tracker = Tracker(model=my_model,
             source=video_path)
-    Tracker.run()
+    tracker.run()
