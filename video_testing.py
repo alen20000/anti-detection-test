@@ -7,53 +7,6 @@ from ultralytics import YOLO
 目標: 解決遊戲檢測
 '''
 
-# 1. 讀取測試影片 & 初始化
-video_path = "videos/test_lie_detector.mp4"
-cap = cv2.VideoCapture(video_path)
-
-# 載入訓練好的模型
-model = YOLO("runs/detect/train-4/weights/best.pt")
-
-if not cap.isOpened():
-    print(f"無法開啟影片：{video_path}，請檢查檔案路徑。")
-    exit()
-
-print("按 'q' 鍵可關閉視窗。")
-
-# 開啟影片迴圈
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        print("影片播放完畢。")
-        break
-
-    # 2. 切割取 ROI
-    h, w, _ = frame.shape
-    ymin, ymax = int(h * 0.22), int(h * 0.70)
-    xmin, xmax = int(w * 0.05), int(w * 0.95)
-    roi_frame = frame[ymin:ymax, xmin:xmax]
-
-    # 3. 使用 YOLO 模型對當前 ROI 畫面進行檢測
-    # conf 為信心度， 滿足才納入
-    results = model.track(
-        roi_frame, 
-        conf=0.8, 
-        persist=True, 
-        tracker="botsort.yaml", 
-        verbose=False
-    )
-    
-    # 4. 繪製BOX
-    annotated_frame = results[0].plot()
-
-    cv2.imshow("Lie Detector Tracking Test", annotated_frame)
-
-    if cv2.waitKey(30) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
-
 class Tracker:
     def __init__(self,model=None,source=None):
         self.model = YOLO(model)  
@@ -63,11 +16,43 @@ class Tracker:
         assert self.cap.isOpened(), "讀取串流失敗"
         pass
 
+    def draw_BBOX(self):
+        pass
+    def run(self):
+        while self.cap.isOpened():
 
+            success, frame = self.cap.read()
+
+            if not success:
+                print("影片播放完畢")
+                break
+
+            # 對測試的影片畫面進行裁切
+            h, w, _ = frame.shape
+            ymin, ymax = int(h * 0.22), int(h * 0.70)
+            xmin, xmax = int(w * 0.05), int(w * 0.95)
+            roi_frame = frame[ymin:ymax, xmin:xmax]
+
+            results = self.model.track(
+                roi_frame, 
+                conf=0.8, 
+                persist=True, 
+                tracker="botsort.yaml", 
+                verbose=False
+            )
+            self.draw_BBOX(results[0].plot())
+
+            if cv2.waitKey(30) & 0xFF == ord('q'):
+                break
+
+
+        # 釋放資源
+        self.cap.release()
+        cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     my_model = "runs/detect/train-4/weights/best.pt"
     video_path = "videos/test_lie_detector.mp4"
     Tracker(model=my_model,
             source=video_path)
-    pass
+    Tracker.run()
