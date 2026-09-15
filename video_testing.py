@@ -39,7 +39,7 @@ while cap.isOpened():
         roi_frame, 
         conf=0.8, 
         persist=True, 
-        tracker="bytetrack.yaml", 
+        tracker="botsort.yaml", 
         verbose=False
     )
     
@@ -53,3 +53,21 @@ while cap.isOpened():
 
 cap.release()
 cv2.destroyAllWindows()
+
+class Tracker:
+    def __init__(self,model=None,source=None):
+        self.model = YOLO(model)  
+        self.names = self.model.names
+        print(f"模型載入成功，模型名稱：{self.names}")
+        self.cap =  cv2.VideoCapture(source)
+        assert self.cap.isOpened(), "讀取串流失敗"
+        pass
+
+
+
+if __name__ == "__main__":
+    my_model = "runs/detect/train-4/weights/best.pt"
+    video_path = "videos/test_lie_detector.mp4"
+    Tracker(model=my_model,
+            source=video_path)
+    pass
