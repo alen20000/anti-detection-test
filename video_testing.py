@@ -82,9 +82,10 @@ class Tracker:
 
             results = self.model.track(
                 roi_frame, 
-                conf=0.8, 
+                conf=0.2, 
+                iou=0.7,
                 persist=True, 
-                tracker="botsort.yaml", 
+                tracker="bytetrack.yaml", 
                 verbose=False
             )
 
@@ -128,7 +129,7 @@ class Tracker:
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    my_model = "runs/detect/train-4/weights/best.pt"
+    my_model = "models\Maple_yolo_v1.pt"
     video_path = "videos/test_lie_detector.mp4"
     tracker = Tracker(model=my_model,
             source=video_path)
