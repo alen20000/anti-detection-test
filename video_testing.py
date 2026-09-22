@@ -24,46 +24,45 @@ class Tracker:
         result = results[0].plot()
         return result
 
-    def lock_initial_target(self, bgr_frame, boxes_xyxy, boxes_ids, boxes_confs, 
-                                conf_thresh=0.5, white_thresh=100, min_area=50):
-            """
-            找到「白色像素最多」的目標，作為鎖定的目標
-            """
-            best_idx = None
-            best_area = 0  # 修正 1：正確宣告區域變數初始化
+    def lock_initial_target(self, binary_frame, boxes_xyxy, boxes_ids, boxes_confs, 
+                                conf_thresh=0.5, min_area=50):
+        """
+        利用全域二值化找出最大的白色區塊，並判斷它屬於哪個 YOLO 目標 ID
+        """
+        # 1. 在全域的二值化影像中尋找所有輪廓
+        contours, _ = cv2.findContours(binary_frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            return None
+        
+        # 2. 找出全域面積最大的輪廓
+        largest_contour = max(contours, key=cv2.contourArea)
+        largest_area = cv2.contourArea(largest_contour)
+        
+        if largest_area < min_area:
+            return None
+            
+        # 計算這個最大輪廓的中心點座標 (cx, cy)
+        M = cv2.moments(largest_contour)
+        if M["m00"] == 0:
+            return None
+        cx = int(M["m10"] / M["m00"])
+        cy = int(M["m01"] / M["m00"])
+        
+        best_id = None
 
-            # 白色目標範圍
-            lower_white = np.array([200, 200, 200], dtype=np.uint8)
-            upper_white = np.array([255, 255, 255], dtype=np.uint8)
+        # 3. 遍歷多目標:以中心座標判斷，落在哪個yolo目標的 box 裡面
+        for i, box in enumerate(boxes_xyxy):
+            if boxes_confs[i] < conf_thresh:
+                continue
+            
+            x1, y1, x2, y2 = map(int, box)
+            
+            # 判斷點 (cx, cy) 是否在該 box 範圍內
+            if x1 <= cx <= x2 and y1 <= cy <= y2:
+                best_id = int(boxes_ids[i])
+                break
 
-            for i, box in enumerate(boxes_xyxy):
-                if boxes_confs[i] < conf_thresh:
-                    continue  # 信心值太低的框，直接跳過，不列入候選
-                x1, y1, x2, y2 = map(int, box)
-                roi = bgr_frame[y1:y2, x1:x2]
-                if roi.size == 0:
-                    continue
-
-                # 先用顏色篩出白色區域的遮罩
-                white_mask = cv2.inRange(roi, lower_white, upper_white)
-                # 用輪廓找出白色區域
-                contours, _ = cv2.findContours(white_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-                if not contours: # 防呆處理
-                    continue
-                largest_contour = max(contours, key=cv2.contourArea)
-                largest_area = cv2.contourArea(largest_contour)
-
-                if largest_area > best_area:
-                    best_area = largest_area
-                    best_idx = i
-
-            # 修正 2：迴圈全部跑完、選出全畫面最大的白色候選後，才檢查門檻
-            if best_idx is None or best_area < min_area:
-                return None
-
-            self.best_area = best_area  # 同步更新實例變數（若後續需要跨幀比較）
-            return int(boxes_ids[best_idx])  # 回傳這個框對應的 track ID，之後就一路追這個ID
+        return best_id
 
     def run(self):
         while self.cap.isOpened():
@@ -80,18 +79,22 @@ class Tracker:
             xmin, xmax = int(w * 0.05), int(w * 0.95)
             roi_frame = frame[ymin:ymax, xmin:xmax]
 
+
+
             results = self.model.track(
                 roi_frame, 
                 conf=0.2, 
                 iou=0.7,
                 persist=True, 
-                tracker="bytetrack.yaml", 
+                tracker="ocsort.yaml", 
                 verbose=False
             )
 
             boxes = results[0].boxes
 
-
+            # frame ->灰階 -> 二值
+            gray_frame = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2GRAY)
+            _, binary_frame = cv2.threshold(gray_frame, 240, 255, cv2.THRESH_BINARY)
             '''
             步驟 I:
                 找到「白色像素最多」的目標，作為鎖定目標
@@ -100,7 +103,7 @@ class Tracker:
             '''
             if self.first_lock_time is None and boxes is not None and boxes.id is not None:
                 self.locked_id = self.lock_initial_target(
-                    bgr_frame=roi_frame,
+                    binary_frame=binary_frame,
                     boxes_xyxy=boxes.xyxy.cpu().numpy(),
                     boxes_ids=boxes.id.cpu().numpy().astype(int), # 從CPU轉numpy再以整數儲存
                     boxes_confs=boxes.conf.cpu().numpy()
@@ -108,18 +111,21 @@ class Tracker:
                 if self.locked_id is not None:
                     self.first_lock_time = time.time()
                     print("初次鎖定目標:", self.locked_id)
+
             if self.first_lock_time and self.first_lock_time + 2 > time.time():
                     self.locked_id = self.lock_initial_target(
-                    bgr_frame=roi_frame,
+                    binary_frame=binary_frame,
                     boxes_xyxy=boxes.xyxy.cpu().numpy(),
                     boxes_ids=boxes.id.cpu().numpy().astype(int), # 從CPU轉numpy再以整數儲存
                     boxes_confs=boxes.conf.cpu().numpy()
                 )
             print("追蹤目標:", self.locked_id)
 
+
+            # bbox display
             annotated_frame  = self.draw_BBOX(results)
             cv2.imshow("Lie Detector Tracking Test", annotated_frame)
-            
+            cv2.imshow("test", binary_frame)
             if cv2.waitKey(30) & 0xFF == ord('q'):
                 break
 
