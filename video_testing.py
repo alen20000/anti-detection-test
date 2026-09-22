@@ -82,7 +82,9 @@ class Tracker:
         return  None
 
     def draw_BBOX(self, results, target_position=None, trajectory=None):
-
+        '''
+        @brief: 繪製BBOX；繪製路徑
+        '''
         #  YOLO 的標記畫面
         result_img = results[0].plot()
         
