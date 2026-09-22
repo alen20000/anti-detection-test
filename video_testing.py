@@ -66,8 +66,13 @@ class Tracker:
     def _tracking_target_position(self,target_ID,boxes):
         '''追蹤目標的cx,xy'''
         #防呆
-        if target_ID is None or boxes is None:
+        if (
+            target_ID is None 
+            or boxes is None 
+            or boxes.id is None
+        ):
             return
+        
         boxes_xyxy = boxes.xyxy.cpu().numpy()
         boxes_ids = boxes.id.cpu().numpy().astype(int)
         
