@@ -16,13 +16,12 @@ class Tracker:
         self.cap =  cv2.VideoCapture(source)
         assert self.cap.isOpened(), "讀取串流失敗"
 
+        
+
         self.locked_id = None #鎖定的目標ID
         self.first_lock_time = None # 紀錄第一次觸發 lock_initial_target 的時間
+        self.trajectory = [] # 路徑記錄
 
-    def draw_BBOX(self,results):
-
-        result = results[0].plot()
-        return result
 
     def lock_initial_target(self, binary_frame, boxes_xyxy, boxes_ids, boxes_confs, 
                                 conf_thresh=0.5, min_area=50):
@@ -64,6 +63,38 @@ class Tracker:
 
         return best_id
 
+    def _tracking_target_position(self,target_ID,boxes):
+        '''追蹤目標的cx,xy'''
+        #防呆
+        if target_ID is None or boxes is None:
+            return
+        boxes_xyxy = boxes.xyxy.cpu().numpy()
+        boxes_ids = boxes.id.cpu().numpy().astype(int)
+        
+        for i, track_id in enumerate(boxes_ids):
+            if track_id == self.locked_id:
+                x1, y1, x2, y2 = map(int, boxes_xyxy[i])
+
+                cx = int((x1 + x2) / 2)
+                cy = int((y1 + y2) / 2)
+                return cx,cy  # 回傳該目標的座標
+
+        return  None
+
+    def draw_BBOX(self, results, target_position=None, trajectory=None):
+
+        #  YOLO 的標記畫面
+        result_img = results[0].plot()
+        
+        # 繪製移動軌跡連線
+        if trajectory and len(trajectory) > 1:
+
+            pts = np.array(trajectory, dtype=np.int32).reshape((-1, 1, 2)) # list轉 numpy陣列格式 (Points, 1, 2) 
+
+            cv2.polylines(result_img, [pts], isClosed=False, color=(0, 255, 0), thickness=2) # 參數 isClosed=False 代表不要頭尾相連
+
+        return result_img
+    
     def run(self):
         while self.cap.isOpened():
 
@@ -121,9 +152,16 @@ class Tracker:
                 )
             print("追蹤目標:", self.locked_id)
 
+            # 目標座標追蹤
+            current_target_position = self._tracking_target_position(self.locked_id,boxes)
+            if current_target_position is not None:
+                print(current_target_position)
+                self.trajectory.append(current_target_position)
 
             # bbox display
-            annotated_frame  = self.draw_BBOX(results)
+            annotated_frame  = self.draw_BBOX(results, current_target_position, self.trajectory)
+
+            
             cv2.imshow("Lie Detector Tracking Test", annotated_frame)
             cv2.imshow("test", binary_frame)
             if cv2.waitKey(30) & 0xFF == ord('q'):
