@@ -1,7 +1,11 @@
 from ultralytics import YOLO
 from pathlib import Path
 '''
-Note: 
+
+@brief: 訓練模型使用
+@details : 若要調用GPU訓練，要安裝對應版本的 python 與 PyTorch。
+
+@Note: 
 檢查有沒有GPU: CMD -> python -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'No GPU')"
 顯示沒有，但其實有 -> 移除舊版並安裝 GPU 專用 PyTorch ; 清除 Torch -> pip uninstall torch torchvision torchaudio -y
 然後安裝對python版本支援GPU的PyTorch
