@@ -17,6 +17,10 @@ class Lie_Detector_Trigger():
             raise FileNotFoundError(f"沒有檢測模板: {self.trigger_template_path.resolve()}")
 
     def check_trigger(self,frame):
+        '''
+        @ brief: 檢查觸發條件
+        @ return: True or False
+        '''
         try:
             result = cv2.matchTemplate(frame, self.trigger_template, cv2.TM_CCOEFF_NORMED)
             _, max_val, _, _ = cv2.minMaxLoc(result)
