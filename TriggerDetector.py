@@ -7,7 +7,7 @@ from pathlib import Path
 '''
 THRESHOLD = 0.8
 
-class Lie_Detector_Trigger():
+class TriggerDetector():
     def __init__(self):
         self.trigger_template = Path("img/trigger_img.png")
 
@@ -16,10 +16,11 @@ class Lie_Detector_Trigger():
         else:
             raise FileNotFoundError(f"沒有檢測模板: {self.trigger_template_path.resolve()}")
 
-    def check_trigger(self,frame):
-        '''
-        @ brief: 檢查觸發條件
-        @ return: True or False
+    def check_lie_detector(self,frame):
+        '''啟動偵測
+
+        Returns: True | False
+
         '''
         try:
             result = cv2.matchTemplate(frame, self.trigger_template, cv2.TM_CCOEFF_NORMED)
@@ -37,5 +38,5 @@ class Lie_Detector_Trigger():
 
 
 if __name__ == "__main__":
-    trigger = Lie_Detector_Trigger()
+    trigger = TriggerDetector()
     trigger.run()

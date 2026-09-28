@@ -1,24 +1,31 @@
 
 import cv2
 import numpy as np
-
 from PIL import ImageGrab
+
+import AntiDetector
+import TriggerDetector
 '''
 $brief 測試 檢測是否測謊、若測謊則進入解題
 
 '''
+
+#======= 偵測範圍
 WINDOW_X_0 = 0
 WINDOW_X_1 = 800
 WINDOW_Y_0 = 0
 WINDOW_Y_1 = 600 
+DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
+# ===================
 
-detection_range = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
-
-
+class Main():
+    def __init__(self):
+        self.AntiDetector = AntiDetector.AntiDetector()
+        self.TriggerDetector = TriggerDetector.TriggerDetector()
 def capture_screen():
     '''抓指定區域畫面'''
 
-    current_frame_res = ImageGrab.grab(detection_range)
+    current_frame_res = ImageGrab.grab(DETCTION_RANGE)
     if current_frame_res is None:
         return None
     current_frame_np = np.array(current_frame_res)
@@ -46,5 +53,6 @@ def run():
 
 
 if __name__ == "__main__":
+    
     run()
     
