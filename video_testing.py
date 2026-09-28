@@ -4,7 +4,8 @@ import time
 from ultralytics import YOLO
 
 '''
-目標: 解決遊戲檢測
+測試用:
+影片來源:https://www.youtube.com/shorts/FizX6Ti5E6A 
 '''
 
 
