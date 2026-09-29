@@ -7,7 +7,7 @@ from paddleocr import PaddleOCR
 
 '''
 THRESHOLD = 0.8
-
+TARGET_TEXTS = ["透明的圖形"]
 class TriggerDetector():
     def __init__(self):
         self.trigger_template_path = Path("img/trigger_img.png")
@@ -17,8 +17,17 @@ class TriggerDetector():
         else:
             raise FileNotFoundError(f"沒有檢測模板: {self.trigger_template_path.resolve()}")
 
-        # 初始化 PaddleOCR，設定使用繁體中文 (ch) 或中英文混合
-        self.ocr = PaddleOCR(use_angle_cls=True, lang='ch')
+        # 初始化 PaddleOCR，設定使用繁體中文
+        self.ocr = PaddleOCR(
+
+            lang='chinese_cht',
+            text_detection_model_name="PP-OCRv5_mobile_det", # 偵測模型
+            text_recognition_model_name="PP-OCRv5_mobile_rec", # 辨識模型
+            use_doc_orientation_classify=False, # 判斷整張圖是否被旋轉: True or False
+            use_doc_unwarping=False,    # 判斷文字彎曲扭曲: True or False
+            use_textline_orientation=False, # 判斷文字上下顛倒: True or False
+
+            )
 
     def check_lie_detector(self,frame):
         '''啟動偵測
@@ -42,29 +51,33 @@ class TriggerDetector():
         # TODO: OCR方法
 
         try:
-        
-            result = self.ocr.predict (frame, cls=True)
 
+            result = self.ocr.predict (frame)
+
+            # 防呆
             if not result or not result[0]:
+                print('沒有東西')
                 return False
-            # 解析辨識出的文字
-            detected_texts = [line[1][0] for line in result[0]]
-            
-            # 組合所有抓到的文字以便做關鍵字比對
-            full_text = "".join(detected_texts)
-            print("測試內容捕獲",full_text)
 
-            if "透明的圖形" in full_text or "LIE DETECTOR" in full_text:
-                return True
+            # 匹配
+            for res in result:
+                text = res["rec_texts"]
+                
+                # 直接拼成一個長文本作為目標
+                full_text = "".join(text)
 
+                for target in TARGET_TEXTS:
+                    if target in full_text:
+                        return True
+                    
 
             return False
         except Exception as e:
-            print(e)
+            print(u"發生錯誤:", e)
             return
 
 
 
-if __name__ == "__main__":
-    trigger = TriggerDetector()
-    trigger.run()
+# if __name__ == "__main__":
+#     trigger = TriggerDetector()
+#     trigger.run()

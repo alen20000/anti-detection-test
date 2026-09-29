@@ -11,10 +11,10 @@ $brief 測試 檢測是否測謊、若測謊則進入解題
 '''
 
 #======= 偵測範圍
-WINDOW_X_0 = 0
-WINDOW_X_1 = 2000
-WINDOW_Y_0 = 0
-WINDOW_Y_1 = 2000
+WINDOW_X_0 = 200
+WINDOW_X_1 = 1200
+WINDOW_Y_0 = 200
+WINDOW_Y_1 = 1000
 DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
 # ===================
 
@@ -47,13 +47,13 @@ class Main():
 
                     is_detecting = self.TriggerDetector.check_lie_detector(current_frame)
                     if is_detecting:
-                        print("偵測到測謊")
+                        print("檢測到人物正在被測謊!!!")
                     if not is_detecting:
-                        print("沒有測謊")
+                        pass
 
 
                 # EXIT(press "Q")
-                if cv2.waitKey(1) & 0xFF == ord('q'):
+                if cv2.waitKey(33) & 0xFF == ord('q'):
                     break
         except Exception as e:
             print(e)
