@@ -9,7 +9,7 @@ THRESHOLD = 0.8
 
 class TriggerDetector():
     def __init__(self):
-        self.trigger_template = Path("img/trigger_img.png")
+        self.trigger_template_path = Path("img/trigger_img.png")
 
         if self.trigger_template_path.exists():
             self.trigger_template = cv2.imread(str(self.trigger_template_path))
