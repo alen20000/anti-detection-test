@@ -12,7 +12,7 @@ $brief 測試 檢測是否測謊、若測謊則進入解題
 
 #======= 偵測範圍
 WINDOW_X_0 = 0
-WINDOW_X_1 = 1280
+WINDOW_X_1 = 2000
 WINDOW_Y_0 = 0
 WINDOW_Y_1 = 2000
 DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
