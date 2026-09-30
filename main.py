@@ -3,6 +3,7 @@ import time
 import cv2
 import numpy as np
 from PIL import ImageGrab
+from enum import Enum, auto
 
 import AntiDetector
 import TriggerDetector
@@ -27,6 +28,16 @@ DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
 CHECK_INTERVAL = 1
 # ===================
 
+
+
+#[!] 應該弄個簡單的狀態機，如果用一堆 flag,toggle 再加一堆判斷，感覺以後會很難看
+#特別是如果要把這模塊放進 maplestory-opencv-automation 的repo內，應該會亂七八糟
+
+class State(Enum):
+    MONITORING = auto()
+    SOLVING    = auto()
+
+
 class Main():
     def __init__(self):
         # self.AntiDetector = AntiDetector.AntiDetector()
@@ -35,6 +46,27 @@ class Main():
         # 計時器
         self.last_check_time = time.time()
 
+        # State
+        self.state = State.MONITORING
+
+    #====
+    # 狀態組
+    #====
+    def _change_state(self, new_state):
+        '''切換狀態
+        '''
+        print(f"{self.state} -> {new_state}")
+        self.state = new_state
+
+    def _on_monitoring(self):
+        '''監測狀態'''
+        pass
+    def _on_solving(self):
+        '''解題狀態'''
+        pass
+    #===
+    # 其他
+    #===
     def _capture_screen(self):
         '''抓指定區域畫面'''
 
