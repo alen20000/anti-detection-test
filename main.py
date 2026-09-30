@@ -24,8 +24,9 @@ WINDOW_X_1 = 1737
 WINDOW_Y_0 = 260
 WINDOW_Y_1 = 1447
 DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
-# ======  偵查頻率(秒)
-CHECK_INTERVAL = 1
+# ====== 時間計時常數相關 
+CHECK_INTERVAL = 1 # 偵查頻率(秒)
+SOLVING_TIMEOUT = 30 # 解題狀態持續時間
 # ===================
 
 
@@ -44,7 +45,8 @@ class Main():
         self.TriggerDetector = TriggerDetector.TriggerDetector()
 
         # 計時器
-        self.last_check_time = time.time()
+        self.last_monitoring_time = time.time() #監測狀態使用
+        self._on_solving_start_time = None # 解題狀態使用:紀錄開始時間
 
         # State
         self.state = State.MONITORING
@@ -55,23 +57,52 @@ class Main():
     def _change_state(self, new_state):
         '''切換狀態
         '''
-        print(f"{self.state} -> {new_state}")
+        print(f"狀態切換: {self.state} -> {new_state}")
         self.state = new_state
+        
+        if self.state == State.SOLVING:
+            self.solving_start_time = time.monotonic() # 紀錄解題開始時間
+
+        elif self.state == State.MONITORING:
+            self.last_check_time = time.monotonic() # 更新上次檢測時間(其實影響也不大 頂多多跑一次OC檢測)
 
     def _on_monitoring(self, current_frame):
-        '''監測狀態'''
-
-        if time.time() - self.last_check_time > CHECK_INTERVAL:  # 計時器
-            self.last_check_time = time.time()
+        '''監測狀態
+        
+        若 is_detecting 為 True 則轉狀態至解題
+        args:
+            current_frame: 畫面
+        note:
+            is_detecting: bool
+        '''
+        
+        
+        if time.time() - self.last_monitoring_time > CHECK_INTERVAL:  # 計時器
+            print("監測狀態中...")
+            self.last_monitoring_time = time.time()
             is_detecting = self.TriggerDetector.check_lie_detector(current_frame)
 
             if is_detecting:
+
                 print("檢測到人物正在被測謊!!!")
+                self._change_state(State.SOLVING)
             if not is_detecting:
                 print("Null")
+
     def _on_solving(self):
-        '''解題狀態'''
-        pass
+        '''解題狀態
+        想法: 解題狀態用時間來結束先預設大概30秒，
+        '''
+        # 
+        elapsed = time.monotonic() - self.solving_start_time
+        if elapsed > SOLVING_TIMEOUT:
+            print("解題狀態結束")
+
+            self._change_state(State.MONITORING) # 轉狀態:解題結束轉回監測
+        print("解題狀態中...")
+
+
+
     #===
     # 其他
     #===
