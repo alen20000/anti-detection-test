@@ -9,14 +9,22 @@ import TriggerDetector
 '''
 $brief 測試 檢測是否測謊、若測謊則進入解題
 
+測試trigger的影片素材
+1. https://www.youtube.com/shorts/FizX6Ti5E6A
+2. https://www.youtube.com/watch?v=UQzZI4hf7xU
+3. https://www.youtube.com/shorts/qB7RdlTa84c
+
+
 '''
 
 #======= 偵測範圍
-WINDOW_X_0 = 0
-WINDOW_X_1 = 1200
-WINDOW_Y_0 = 200
-WINDOW_Y_1 = 1600
+WINDOW_X_0 = 1038
+WINDOW_X_1 = 1737
+WINDOW_Y_0 = 260
+WINDOW_Y_1 = 1447
 DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
+# ======  偵查頻率(秒)
+CHECK_INTERVAL = 1
 # ===================
 
 class Main():
@@ -50,8 +58,8 @@ class Main():
                 # detect 
                 if current_frame is not None:
 
-                    if time.time() - self.last_check_time > 1:  # 計時器
-
+                    if time.time() - self.last_check_time > CHECK_INTERVAL:  # 計時器
+                        self.last_check_time = time.time()
                         is_detecting = self.TriggerDetector.check_lie_detector(current_frame)
 
                         if is_detecting:
