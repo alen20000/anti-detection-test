@@ -12,7 +12,16 @@
     <td align="center">
       <img src="./assets/log_img.png" width="400">
       <br>
-      <em></em>
+      <em>Yolo檢測</em>
+    </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td align="center">
+      <img src="./assets/log_img_trigger.png" width="400">
+      <br>
+      <em>OCR偵測被測謊</em>
     </td>
   </tr>
 </table>
