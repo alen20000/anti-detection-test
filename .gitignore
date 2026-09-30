@@ -4,6 +4,7 @@
 *.log
 *.mp4
 *.zip
+*.mkv
 
 # ===Folder=== 
 **/logs/
