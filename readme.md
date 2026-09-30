@@ -19,7 +19,7 @@
     <td align="center">
       <img src="./assets/test_img_002.png" width="400">
       <br>
-      <em>Yolo檢測</em>
+      <em></em>
     </td>
   </tr>
 </table>
