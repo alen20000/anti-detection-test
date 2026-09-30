@@ -7,6 +7,8 @@ from paddleocr import PaddleOCR
 
 '''
 THRESHOLD = 0.8
+# Note:[測試]台服用 "透明的圖形" 國際服:"Use the mouse to follow" 國服:"移动鼠标" -> 已經在解題，才會抓到；真正要轉狀態用
+# Note:[測試] "LIE DETECTOR" ->  正要開始解題時，就會抓到；測試觸發用
 TARGET_TEXTS = ["透明的圖形"]
 class TriggerDetector():
     def __init__(self):
@@ -20,7 +22,7 @@ class TriggerDetector():
         # 初始化 PaddleOCR，設定使用繁體中文
         self.ocr = PaddleOCR(
 
-            lang='chinese_cht',
+            lang='chinese_cht', # 繁體中文 "chinese_cht"  ; 簡體中文 "ch" ; 英文 "en"
             text_detection_model_name="PP-OCRv5_mobile_det", # 偵測模型
             text_recognition_model_name="PP-OCRv5_mobile_rec", # 辨識模型
             use_doc_orientation_classify=False, # 判斷整張圖是否被旋轉: True or False
