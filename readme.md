@@ -25,3 +25,12 @@
     </td>
   </tr>
 </table>
+<table>
+  <tr>
+    <td align="center">
+      <img src="./assets/log_img_state.png" width="400">
+      <br>
+      <em>State切換</em>
+    </td>
+  </tr>
+</table>
