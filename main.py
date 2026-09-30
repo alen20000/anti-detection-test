@@ -19,10 +19,10 @@ $brief 測試 檢測是否測謊、若測謊則進入解題
 '''
 
 #======= 偵測範圍
-WINDOW_X_0 = 1038
-WINDOW_X_1 = 1737
-WINDOW_Y_0 = 260
-WINDOW_Y_1 = 1447
+WINDOW_X_0 = 577
+WINDOW_Y_0 = 672
+WINDOW_X_1 = 800
+WINDOW_Y_1 = 700
 DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
 # ====== 時間計時常數相關 
 CHECK_INTERVAL = 1 # 偵查頻率(秒)
