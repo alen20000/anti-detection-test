@@ -58,9 +58,17 @@ class Main():
         print(f"{self.state} -> {new_state}")
         self.state = new_state
 
-    def _on_monitoring(self):
+    def _on_monitoring(self, current_frame):
         '''監測狀態'''
-        pass
+
+        if time.time() - self.last_check_time > CHECK_INTERVAL:  # 計時器
+            self.last_check_time = time.time()
+            is_detecting = self.TriggerDetector.check_lie_detector(current_frame)
+
+            if is_detecting:
+                print("檢測到人物正在被測謊!!!")
+            if not is_detecting:
+                print("Null")
     def _on_solving(self):
         '''解題狀態'''
         pass
@@ -83,21 +91,23 @@ class Main():
         current_frame = None
         try:
             while True:
+
+                # 抓畫面
                 current_frame = self._capture_screen()
+
                 if current_frame is not None:
                     cv2.imshow("DISPLAY", current_frame)
 
-                # detect 
-                if current_frame is not None:
+                # 防呆
+                if current_frame is None:
+                    continue
 
-                    if time.time() - self.last_check_time > CHECK_INTERVAL:  # 計時器
-                        self.last_check_time = time.time()
-                        is_detecting = self.TriggerDetector.check_lie_detector(current_frame)
+                #依狀態判斷
 
-                        if is_detecting:
-                            print("檢測到人物正在被測謊!!!")
-                        if not is_detecting:
-                            print("Null")
+                if self.state == State.MONITORING:
+                    self._on_monitoring(current_frame)
+                elif self.state == State.SOLVING:
+                    self._on_solving()
 
 
                 # EXIT(press "Q")

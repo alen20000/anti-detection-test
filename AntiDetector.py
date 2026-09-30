@@ -89,8 +89,7 @@ class AntiDetector:
         return  None
 
     def draw_BBOX(self, results, target_position=None, trajectory=None):
-        '''
-        @brief: 繪製BBOX；繪製路徑
+        '''繪製BBOX；繪製路徑
         '''
         #  YOLO 的標記畫面
         result_img = results[0].plot()
@@ -181,9 +180,3 @@ class AntiDetector:
         self.cap.release()
         cv2.destroyAllWindows()
 
-if __name__ == "__main__":
-    my_model = "models\Maple_yolo_v1.pt"
-    video_path = "videos/test_lie_detector.mp4"
-    tracker = Tracker(model=my_model,
-            source=video_path)
-    tracker.run()
