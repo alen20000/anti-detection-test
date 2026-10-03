@@ -19,10 +19,15 @@ $brief 測試 檢測是否測謊、若測謊則進入解題
 '''
 
 #======= 偵測範圍
-WINDOW_X_0 = 577
-WINDOW_Y_0 = 672
-WINDOW_X_1 = 800
-WINDOW_Y_1 = 700
+# WINDOW_X_0 = 577
+# WINDOW_Y_0 = 672
+# WINDOW_X_1 = 800
+# WINDOW_Y_1 = 700
+
+WINDOW_X_0 = 890
+WINDOW_Y_0 = 388
+WINDOW_X_1 = 1677
+WINDOW_Y_1 = 1200
 DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
 # ====== 時間計時常數相關 
 CHECK_INTERVAL = 1 # 偵查頻率(秒)
@@ -109,11 +114,12 @@ class Main():
     def _capture_screen(self):
         '''抓指定區域畫面'''
 
-        current_frame_res = ImageGrab.grab(DETCTION_RANGE)
-        if current_frame_res is None:
+        current_frame_rgb = ImageGrab.grab(DETCTION_RANGE)
+        if current_frame_rgb is None:
             return None
-        current_frame_np = np.array(current_frame_res)
-        current_frame_bgr = cv2.cvtColor(current_frame_np, cv2.COLOR_BGR2RGB)
+        current_frame_np = np.array(current_frame_rgb)
+        current_frame_bgr = cv2.cvtColor(current_frame_np, cv2.COLOR_RGB2BGR)
+
 
         return current_frame_bgr
 
