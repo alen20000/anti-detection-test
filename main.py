@@ -46,7 +46,7 @@ class State(Enum):
 
 class Main():
     def __init__(self):
-        # self.AntiDetector = AntiDetector.AntiDetector()
+        self.AntiDetector = AntiDetector.AntiDetector()
         self.TriggerDetector = TriggerDetector.TriggerDetector()
 
         # 計時器
@@ -55,6 +55,7 @@ class Main():
 
         # State
         self.state = State.MONITORING
+
 
     #====
     # 狀態組
@@ -94,7 +95,7 @@ class Main():
             if not is_detecting:
                 print("Null")
 
-    def _on_solving(self):
+    def _on_solving(self,frame):
         '''解題狀態
         想法: 解題狀態用時間來結束先預設大概30秒，
         '''
@@ -105,6 +106,7 @@ class Main():
 
             self._change_state(State.MONITORING) # 轉狀態:解題結束轉回監測
         print("解題狀態中...")
+        self.AntiDetector.solve_problem(frame)
 
 
 
@@ -144,7 +146,7 @@ class Main():
                 if self.state == State.MONITORING:
                     self._on_monitoring(current_frame)
                 elif self.state == State.SOLVING:
-                    self._on_solving()
+                    self._on_solving(current_frame)
 
 
                 # EXIT(press "Q")
@@ -156,6 +158,7 @@ class Main():
             cv2.destroyAllWindows()
 
 
+        
 if __name__ == "__main__":
     main = Main()
     main.run()
