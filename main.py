@@ -19,27 +19,30 @@ $brief 測試 檢測是否測謊、若測謊則進入解題
 '''
 
 #======= 偵測範圍
-# WINDOW_X_0 = 577
-# WINDOW_Y_0 = 672
-# WINDOW_X_1 = 800
-# WINDOW_Y_1 = 700
-
-WINDOW_X_0 = 890
-WINDOW_Y_0 = 388
-WINDOW_X_1 = 1677
-WINDOW_Y_1 = 1200
+# 放到實際上，全部用全局就好，因為客戶端會用窗柄操作定位為0,0，這邊是方便測試裁切成這樣
+# 遊戲客戶端畫面
+WINDOW_X_0 = 898
+WINDOW_Y_0 = 208
+WINDOW_X_1 = 1700
+WINDOW_Y_1 = 1300
 DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
 # ==== Crop 範圍
 
 #  OCR偵測範圍(全局)
-TRIGGER_DETECTOR_X1, TRIGGER_DETECTOR_Y1, TRIGGER_DETECTOR_X2, TRIGGER_DETECTOR_Y2 = 903,1109,1656,1168
+TRIGGER_DETECTOR_X0, TRIGGER_DETECTOR_Y0, TRIGGER_DETECTOR_X1, TRIGGER_DETECTOR_Y1 = 903,1109,1656,1168
 #  OCR偵測範圍(區域)
+REL_TRIGGER_X0 = TRIGGER_DETECTOR_X0 - WINDOW_X_0
+REL_TRIGGER_Y0 = TRIGGER_DETECTOR_Y0 - WINDOW_Y_0
 REL_TRIGGER_X1 = TRIGGER_DETECTOR_X1 - WINDOW_X_0
 REL_TRIGGER_Y1 = TRIGGER_DETECTOR_Y1 - WINDOW_Y_0
-REL_TRIGGER_X2 = TRIGGER_DETECTOR_X2 - WINDOW_X_0
-REL_TRIGGER_Y2 = TRIGGER_DETECTOR_Y2 - WINDOW_Y_0
-#  YOLO偵測範圍
-YOLO_DETECTOR = ()
+
+#  YOLO偵測範圍(全局)
+YOLO_DETECTOR_X0, YOLO_DETECTOR_Y0, YOLO_DETECTOR_X1, YOLO_DETECTOR_Y1 = 911,387,1674,1097
+# YOLO偵測範圍(區域)
+REL_YOLO_X0 = YOLO_DETECTOR_X0 - WINDOW_X_0
+REL_YOLO_Y0 = YOLO_DETECTOR_Y0 - WINDOW_Y_0
+REL_YOLO_X1 = YOLO_DETECTOR_X1 - WINDOW_X_0
+REL_YOLO_Y1 = YOLO_DETECTOR_Y1 - WINDOW_Y_0
 
 # ====== 時間計時常數相關 
 CHECK_INTERVAL = 1 # 偵查頻率(秒)
@@ -98,7 +101,7 @@ class Main():
         if time.time() - self.last_monitoring_time > CHECK_INTERVAL:  # 計時器
             print("監測狀態中...")
             self.last_monitoring_time = time.time()
-            trigger_range = current_frame[REL_TRIGGER_Y1:REL_TRIGGER_Y2, REL_TRIGGER_X1:REL_TRIGGER_X2]
+            trigger_range = current_frame[REL_TRIGGER_Y0:REL_TRIGGER_Y1, REL_TRIGGER_X0:REL_TRIGGER_X1]
             is_detecting = self.TriggerDetector.check_lie_detector(trigger_range)
 
             if is_detecting:
@@ -106,7 +109,7 @@ class Main():
                 print("檢測到人物正在被測謊!!!")
                 self._change_state(State.SOLVING)
             if not is_detecting:
-                print("Null")
+                print("Normal")
 
     def _on_solving(self,frame):
         '''解題狀態
@@ -119,7 +122,8 @@ class Main():
 
             self._change_state(State.MONITORING) # 轉狀態:解題結束轉回監測
         print("解題狀態中...")
-        self.AntiDetector.solve_problem(frame)
+        solving_range = frame[REL_YOLO_Y0:REL_YOLO_Y1, REL_YOLO_X0:REL_YOLO_X1]
+        self.AntiDetector.solving_problem(solving_range)
 
 
 
@@ -148,7 +152,7 @@ class Main():
                 current_frame = self._capture_screen()
                 
                 if current_frame is not None:
-                    trigger_range = current_frame[REL_TRIGGER_Y1:REL_TRIGGER_Y2, REL_TRIGGER_X1:REL_TRIGGER_X2]
+                    trigger_range = current_frame[REL_TRIGGER_Y0:REL_TRIGGER_Y1, REL_TRIGGER_X0:REL_TRIGGER_X1]
                     cv2.imshow("triggerr_range", trigger_range)
 
                 # 防呆

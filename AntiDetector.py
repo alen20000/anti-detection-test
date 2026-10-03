@@ -102,7 +102,7 @@ class AntiDetector:
 
         return result_img
     
-    def solve_problem(self,frame):
+    def solving_problem(self,frame):
         ''' 開始解題
 
         Args: 
@@ -157,7 +157,7 @@ class AntiDetector:
 
         
         cv2.imshow("Lie Detector Tracking Test", annotated_frame) # 測試用：顯示目標追蹤畫面
-        cv2.imshow("test", binary_frame) # 測試用：顯示二值化後的畫面
+        # cv2.imshow("test", binary_frame) # 測試用：顯示二值化後的畫面
 
 
 
