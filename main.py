@@ -50,10 +50,6 @@ SOLVING_TIMEOUT = 30 # 解題狀態持續時間
 # ===================
 
 
-
-#[!] 應該弄個簡單的狀態機，如果用一堆 flag,toggle 再加一堆判斷，感覺以後會很難看
-#特別是如果要把這模塊放進 maplestory-opencv-automation 的repo內，應該會亂七八糟
-
 class State(Enum):
     MONITORING = auto()
     SOLVING    = auto()
