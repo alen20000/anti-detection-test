@@ -26,7 +26,8 @@
 
 * [NOTE] 小遊戲時間: 15秒(包含倒數三秒)
 * [NOTE] PaddleOCR: 好像只吃三通道，可能它會自己處理，不用特地處理為單通道，直接餵三通道就可以
-* [Problem] 監測模塊與解題模塊串進主迴圈後，解題不順:可能要改mss讀取frame；可能Yolo沒弄好；可能要找更好的追蹤方法
+* [Problem] 監測模塊與解題模塊串進主迴圈後，解題不順:可能要改mss讀取frame；可能Yolo沒弄好；可能解題要單獨threading；可能要找更好的追蹤方法
+
  <table>
   <tr>
     <td align="center">
