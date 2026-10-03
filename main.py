@@ -46,7 +46,7 @@ REL_YOLO_Y1 = YOLO_DETECTOR_Y1 - WINDOW_Y_0
 
 # ====== 時間計時常數相關 
 CHECK_INTERVAL = 1 # 偵查頻率(秒)
-SOLVING_TIMEOUT = 30 # 解題狀態持續時間
+SOLVING_TIMEOUT = 15 # 解題狀態持續時間
 # ===================
 
 
