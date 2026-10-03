@@ -24,6 +24,7 @@
   </tr>
 </table>
 
+* [NOTE] PaddleOCR: 好像只吃三通道，可能它會自己處理，不用特地處理為單通道，直接餵三通道就可以
 # Experiment Img
 <table>
   <tr>
