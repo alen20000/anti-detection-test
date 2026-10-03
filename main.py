@@ -29,6 +29,18 @@ WINDOW_Y_0 = 388
 WINDOW_X_1 = 1677
 WINDOW_Y_1 = 1200
 DETCTION_RANGE = (WINDOW_X_0, WINDOW_Y_0, WINDOW_X_1, WINDOW_Y_1)
+# ==== Crop 範圍
+
+#  OCR偵測範圍(全局)
+TRIGGER_DETECTOR_X1, TRIGGER_DETECTOR_Y1, TRIGGER_DETECTOR_X2, TRIGGER_DETECTOR_Y2 = 903,1109,1656,1168
+#  OCR偵測範圍(區域)
+REL_TRIGGER_X1 = TRIGGER_DETECTOR_X1 - WINDOW_X_0
+REL_TRIGGER_Y1 = TRIGGER_DETECTOR_Y1 - WINDOW_Y_0
+REL_TRIGGER_X2 = TRIGGER_DETECTOR_X2 - WINDOW_X_0
+REL_TRIGGER_Y2 = TRIGGER_DETECTOR_Y2 - WINDOW_Y_0
+#  YOLO偵測範圍
+YOLO_DETECTOR = ()
+
 # ====== 時間計時常數相關 
 CHECK_INTERVAL = 1 # 偵查頻率(秒)
 SOLVING_TIMEOUT = 30 # 解題狀態持續時間
@@ -86,7 +98,8 @@ class Main():
         if time.time() - self.last_monitoring_time > CHECK_INTERVAL:  # 計時器
             print("監測狀態中...")
             self.last_monitoring_time = time.time()
-            is_detecting = self.TriggerDetector.check_lie_detector(current_frame)
+            trigger_range = current_frame[REL_TRIGGER_Y1:REL_TRIGGER_Y2, REL_TRIGGER_X1:REL_TRIGGER_X2]
+            is_detecting = self.TriggerDetector.check_lie_detector(trigger_range)
 
             if is_detecting:
 
@@ -133,9 +146,10 @@ class Main():
 
                 # 抓畫面
                 current_frame = self._capture_screen()
-
+                
                 if current_frame is not None:
-                    cv2.imshow("DISPLAY", current_frame)
+                    trigger_range = current_frame[REL_TRIGGER_Y1:REL_TRIGGER_Y2, REL_TRIGGER_X1:REL_TRIGGER_X2]
+                    cv2.imshow("triggerr_range", trigger_range)
 
                 # 防呆
                 if current_frame is None:
@@ -144,6 +158,7 @@ class Main():
                 #依狀態判斷
 
                 if self.state == State.MONITORING:
+                    
                     self._on_monitoring(current_frame)
                 elif self.state == State.SOLVING:
                     self._on_solving(current_frame)
