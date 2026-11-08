@@ -12,12 +12,7 @@ THRESHOLD = 0.8
 TARGET_TEXTS = ["透明的圖形"]
 class TriggerDetector():
     def __init__(self):
-        self.trigger_template_path = Path("img/trigger_img.png")
 
-        if self.trigger_template_path.exists():
-            self.trigger_template = cv2.imread(str(self.trigger_template_path))
-        else:
-            raise FileNotFoundError(f"沒有檢測模板: {self.trigger_template_path.resolve()}")
 
         # 初始化 PaddleOCR，設定使用繁體中文
         self.ocr = PaddleOCR(
