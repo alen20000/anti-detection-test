@@ -22,6 +22,8 @@ class AntiDetector:
 
         self.trajectory = [] # 路徑記錄
 
+        self.history = {} # 放每個物件的上次座標
+
         # 預熱:空推論
         dummy_frame = np.zeros((640, 640, 3), dtype=np.uint8)
         self.model(dummy_frame, verbose=False)
@@ -101,6 +103,24 @@ class AntiDetector:
             cv2.polylines(result_img, [pts], isClosed=False, color=(0, 255, 0), thickness=2) # 參數 isClosed=False 代表不要頭尾相連
 
         return result_img
+
+    def record_object(self, boxes):
+        '''紀錄物件資訊
+        Args: boxes (目標bbox容器)
+        '''
+
+        # 防呆:這一幀沒有追蹤 ID 就不記錄
+        if boxes is None or boxes.id is None:
+            return
+
+        # 紀錄中心座標； cpu() 預防資料存gpu而拉回cpu ；numpy() 將tensor轉為numpy； astyeent() 轉為整數序列
+        xywh = boxes.xywh.cpu().numpy()
+        ids = boxes.id.cpu().numpy().astype(int)
+
+        # 先測試，只儲存前幀資訊
+        for i in range(len(ids)):
+            self.history[ids[i]] = (xywh[i][0], xywh[i][1])
+
     
     def solving_problem(self,frame):
         ''' 開始解題
@@ -112,7 +132,8 @@ class AntiDetector:
         # 防呆
         if frame is None:
             return
-        
+
+        # Yolo物件偵測與多目標追蹤
         results = self.model.track(
             frame, 
             conf=0.2, 
@@ -121,8 +142,12 @@ class AntiDetector:
             tracker="ocsort.yaml", 
             verbose=False
         )
-
+        # 偵測與追蹤的框體結果
         boxes = results[0].boxes
+
+        # 紀錄物件資訊
+        self.record_object(boxes)
+        print("紀錄測試", self.history)
 
         # frame ->灰階 -> 二值
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
