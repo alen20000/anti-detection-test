@@ -113,14 +113,15 @@ class AntiDetector:
         if boxes is None or boxes.id is None:
             return
 
-        # 紀錄中心座標； cpu() 預防資料存gpu而拉回cpu ；numpy() 將tensor轉為numpy； astyeent() 轉為整數序列
+        # 紀錄中心座標； cpu() 預防資料存gpu而拉回cpu ；numpy() 將tensor轉為numpy； astype() 轉整數儲存
         xywh = boxes.xywh.cpu().numpy()
         ids = boxes.id.cpu().numpy().astype(int)
 
         # 先測試，只儲存前幀資訊
         for i in range(len(ids)):
-            self.history[ids[i]] = (xywh[i][0], xywh[i][1])
-
+            id = int(ids[i])
+            self.history[id] = (int(xywh[i][0]), int(xywh[i][1]))
+            print("ID", ids[i], "座標", self.history[ids[i]])
     
     def solving_problem(self,frame):
         ''' 開始解題
