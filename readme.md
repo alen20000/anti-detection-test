@@ -45,7 +45,7 @@
     <td align="center">
       <img src="./assets/log_img_note_0001.png" width="400">
       <br>
-      <em>卡頓與檢測不良</em>
+      <em></em>
     </td>
   </tr>
 </table>
