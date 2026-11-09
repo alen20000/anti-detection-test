@@ -38,6 +38,20 @@
   </tr>
 </table>
 
+* [NOTE] 原本只利用前三秒白色區塊做定位的辦法不行，過死板也沒彈性；物體除了追蹤目標以外，其餘的平移方向都相同；移動距離做追蹤判斷也不太行，一是目標移動是在二維隨機跑的，計算距離時它不會一直是位移最長的，二是Yolo追蹤有震動導致各目標計算距離時失真，這可能是Yolo沒弄好
+
+ <table>
+  <tr>
+    <td align="center">
+      <img src="./assets/log_img_note_0001.png" width="400">
+      <br>
+      <em>卡頓與檢測不良</em>
+    </td>
+  </tr>
+</table>
+
+
+
 # Experiment Img
 
 <table>
