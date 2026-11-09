@@ -104,7 +104,7 @@ class AntiDetector:
 
         return result_img
 
-    def record_object(self, boxes):
+    def record_object_position(self, boxes):
         '''紀錄物件資訊
         Args: boxes (目標bbox容器)
         '''
@@ -123,9 +123,9 @@ class AntiDetector:
             self.current_objects_position[id] = (int(xywh[i][0]), int(xywh[i][1]))
             print("ID", ids[i], "座標", self.current_objects_position[ids[i]])
 
-    def last_frame_position(self):
+    def copy_to_last_object_position(self):
         '''把用過的current_objects_position資料複製到last_objects_position'''
-        self.last_objects_position = self.current_objects_position
+        self.last_objects_position = self.current_objects_position.copy()
         print("成功複製容器")
 
     def handleMoveDirection(self,boxes):
@@ -159,8 +159,8 @@ class AntiDetector:
         boxes = results[0].boxes
 
         # 紀錄物件資訊
-        self.record_object(boxes)
-        self.last_frame_position()
+        self.record_object_position(boxes)
+        self.copy_to_last_object_position()
 
 
         # frame ->灰階 -> 二值
