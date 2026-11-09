@@ -22,8 +22,8 @@ class AntiDetector:
 
         self.trajectory = [] # 路徑記錄
 
-        self.history = {} # 放每個物件的上次座標
-
+        self.last_objects_position = {} # 放上一幀的目標座標
+        self.current_objects_position = {} # 放本幀目標座標
         # 預熱:空推論
         dummy_frame = np.zeros((640, 640, 3), dtype=np.uint8)
         self.model(dummy_frame, verbose=False)
@@ -120,9 +120,21 @@ class AntiDetector:
         # 先測試，只儲存前幀資訊
         for i in range(len(ids)):
             id = int(ids[i])
-            self.history[id] = (int(xywh[i][0]), int(xywh[i][1]))
-            print("ID", ids[i], "座標", self.history[ids[i]])
-    
+            self.current_objects_position[id] = (int(xywh[i][0]), int(xywh[i][1]))
+            print("ID", ids[i], "座標", self.current_objects_position[ids[i]])
+
+    def last_frame_position(self):
+        '''把用過的current_objects_position資料複製到last_objects_position'''
+        self.last_objects_position = self.current_objects_position
+        print("成功複製容器")
+
+    def handleMoveDirection(self,boxes):
+        '''
+        判斷每個物件的移動方向
+        '''
+        if boxes is None or boxes.id is None:
+            return
+
     def solving_problem(self,frame):
         ''' 開始解題
 
@@ -148,7 +160,8 @@ class AntiDetector:
 
         # 紀錄物件資訊
         self.record_object(boxes)
-        print("紀錄測試", self.history)
+        self.last_frame_position()
+
 
         # frame ->灰階 -> 二值
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
