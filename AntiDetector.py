@@ -28,6 +28,19 @@ class AntiDetector:
         dummy_frame = np.zeros((640, 640, 3), dtype=np.uint8)
         self.model(dummy_frame, verbose=False)
 
+    def reset(self):
+        '''每次解題開始前呼叫，把狀態還原'''
+        self.locked_id = None
+        self.trajectory = []
+        self.last_objects_position = {}
+        self.current_objects_position = {}
+
+        # 防呆檢查 + 清掉 YOLO tracker 的內部狀態
+        if self.model.predictor is not None and hasattr(self.model.predictor, "trackers"):
+            for tracker in self.model.predictor.trackers:
+                tracker.reset()
+
+
     def _lock_initial_target(self, binary_frame, boxes_xyxy, boxes_ids, boxes_confs, 
                                 conf_thresh=0.5, min_area=50):
         """抓出目標
@@ -108,6 +121,8 @@ class AntiDetector:
         '''紀錄物件資訊
         Args: boxes (目標bbox容器)
         '''
+        # 容器初始化
+        self.current_objects_position = {}
 
         # 防呆:這一幀沒有追蹤 ID 就不記錄
         if boxes is None or boxes.id is None:
@@ -122,23 +137,19 @@ class AntiDetector:
             tracknig_id = int(ids[i])
             self.current_objects_position[tracknig_id] = (int(xywh[i][0]), int(xywh[i][1]))
 
-        print("test:目前內容", self.current_objects_position)
-
     def copy_to_last_object_position(self):
         '''把當前幀的物件資料儲存給上一幀容器'''
         self.last_objects_position = self.current_objects_position.copy()
-        print("test:前幀內容", self.last_objects_position)
+
 
     def handleMoveDirection(self,frame):
         '''
         判斷每個物件的移動方向
         '''
 
-
-
         for tracknig_id, (cx, cy) in self.current_objects_position.items():
 
-            # 有些號碼會消失，遇到消失的編號做跳過處理
+            # 有些號碼會消失、不存在，遇到消失的編號做跳過處理
             if tracknig_id not in self.last_objects_position:
                 continue
 
@@ -152,7 +163,9 @@ class AntiDetector:
             upscale = 1
             dx = dx * upscale
             dy = dy * upscale
-            cv2.arrowedLine(frame, (cx, cy), (cx + dx, cy + dy), (180, 100, 0), 5)
+
+            # 畫箭頭
+            cv2.arrowedLine(frame, (cx, cy), (cx + dx, cy + dy), (180, 100, 0), 2)
 
     def solving_problem(self,frame):
         ''' 開始解題
@@ -180,6 +193,12 @@ class AntiDetector:
         # 紀錄該幀的物件資訊
         self.record_object_position(boxes)
 
+        # 防呆:該幀沒找到任何物件
+        if boxes.id is None:
+            self.copy_to_last_object_position()   # 等於清空容器
+            return False
+        print("test:目前內容", self.current_objects_position)
+        print("test:前幀內容", self.last_objects_position)
 
 
         # frame ->灰階 -> 二值

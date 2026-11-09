@@ -78,9 +78,12 @@ class Main():
         self.state = new_state
         
         if self.state == State.SOLVING:
+
             self.solving_start_time = time.monotonic() # 紀錄解題開始時間
 
         elif self.state == State.MONITORING:
+            # 初始化過檢測模塊的數據
+            self.AntiDetector.reset()
             self.last_check_time = time.monotonic() # 更新上次檢測時間(其實影響也不大 頂多多跑一次OC檢測)
 
     def _on_monitoring(self, current_frame):
@@ -111,7 +114,7 @@ class Main():
         '''解題狀態
         想法: 解題狀態用時間來結束先預設大概30秒，
         '''
-        # 
+
         elapsed = time.monotonic() - self.solving_start_time
         if elapsed > SOLVING_TIMEOUT:
             print("解題狀態結束")
