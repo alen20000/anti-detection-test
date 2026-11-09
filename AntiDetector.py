@@ -119,21 +119,40 @@ class AntiDetector:
 
         # 先測試，只儲存前幀資訊
         for i in range(len(ids)):
-            id = int(ids[i])
-            self.current_objects_position[id] = (int(xywh[i][0]), int(xywh[i][1]))
-            print("ID", ids[i], "座標", self.current_objects_position[ids[i]])
+            tracknig_id = int(ids[i])
+            self.current_objects_position[tracknig_id] = (int(xywh[i][0]), int(xywh[i][1]))
+
+        print("test:目前內容", self.current_objects_position)
 
     def copy_to_last_object_position(self):
-        '''把用過的current_objects_position資料複製到last_objects_position'''
+        '''把當前幀的物件資料儲存給上一幀容器'''
         self.last_objects_position = self.current_objects_position.copy()
-        print("成功複製容器")
+        print("test:前幀內容", self.last_objects_position)
 
-    def handleMoveDirection(self,boxes):
+    def handleMoveDirection(self,frame):
         '''
         判斷每個物件的移動方向
         '''
-        if boxes is None or boxes.id is None:
-            return
+
+
+
+        for tracknig_id, (cx, cy) in self.current_objects_position.items():
+
+            # 有些號碼會消失，遇到消失的編號做跳過處理
+            if tracknig_id not in self.last_objects_position:
+                continue
+
+            last_cx, last_cy = self.last_objects_position[tracknig_id]
+
+            # 計算位移
+            dx = cx - last_cx
+            dy = cy - last_cy
+
+            # 怕數字太小，畫不出來
+            upscale = 1
+            dx = dx * upscale
+            dy = dy * upscale
+            cv2.arrowedLine(frame, (cx, cy), (cx + dx, cy + dy), (180, 100, 0), 5)
 
     def solving_problem(self,frame):
         ''' 開始解題
@@ -158,9 +177,9 @@ class AntiDetector:
         # 偵測與追蹤的框體結果
         boxes = results[0].boxes
 
-        # 紀錄物件資訊
+        # 紀錄該幀的物件資訊
         self.record_object_position(boxes)
-        self.copy_to_last_object_position()
+
 
 
         # frame ->灰階 -> 二值
@@ -193,8 +212,11 @@ class AntiDetector:
 
         # bbox display
         annotated_frame  = self.draw_BBOX(results, current_target_position, self.trajectory)
+        self.handleMoveDirection(annotated_frame)
 
-        
+        #迴圈結束前把該幀資訊除存
+        self.copy_to_last_object_position()
+
         cv2.imshow("Lie Detector Tracking Test", annotated_frame) # 測試用：顯示目標追蹤畫面
         # cv2.imshow("test", binary_frame) # 測試用：顯示二值化後的畫面
 
