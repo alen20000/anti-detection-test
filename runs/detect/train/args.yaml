@@ -1,8 +1,8 @@
 task: detect
 mode: train
 model: D:\Projects\Cat-Lab\Yolo_test\models\yolov8n.pt
-data: D:\Projects\Cat-Lab\Yolo_test\dataset\LD_yolov8\data.yaml
-epochs: 50
+data: D:\Projects\Cat-Lab\Yolo_test\dataset\LD.v3i.yolov8\data.yaml
+epochs: 100
 time: null
 patience: 100
 batch: 16
