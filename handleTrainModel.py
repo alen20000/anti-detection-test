@@ -5,7 +5,11 @@ from pathlib import Path
 
 FOLDER_PATH = Path(__file__).parent
 # 數據集目錄
-DATASET_FOLDER_PATH  = FOLDER_PATH / "dataset"
+DATASETS_ROOT_FOLDER_PATH  = FOLDER_PATH / "dataset"
+DATASET_FOLDER_NAME = "LD_yolov8"  # 填入要使用數據集的資料夾名稱
+DATASET_FOLDER_PATH = DATASETS_ROOT_FOLDER_PATH / DATASET_FOLDER_NAME # 數據集路徑
+DATA_YAML_PATH = DATASET_FOLDER_PATH / "data.yaml" # 數據集的設定檔
+
 
 # 基礎模型路徑設定
 YOLO_MODEL_DICT = {
@@ -25,31 +29,51 @@ BASIC_MODEL = FOLDER_PATH / "models" / YOLO_MODEL_DICT[YOLO_MODEL_CHOOSE]
 
 沒辦法的話，只能建立虛擬環境，安裝穩定版本的 python 3.12 然後在虛擬機環境安裝 -> pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 '''
-# # 路徑處理
-# current_dir = Path(__file__)
-# data_dir = current_dir.parent / "Maple_yolo_v1" / "data.yaml" # 訓練資料
-# basic_yolo_model = current_dir.parent /"models"/ "yolov8n.pt"
-
-# print(data_dir)
-# # 1. 載入基底模型 (y8比較經典)
-# model = YOLO(basic_yolo_model)
-
-# if data_dir.exists():
-
-#     # 2. 開始訓練
-#     results = model.train(
-#         data=data_dir,  # 
-#         epochs=50,  # 訓練輪數
-#         imgsz=640,  # 圖片大小
-#         batch=16,  # 批次大小
-#     )
-# else:
-#     print("檔案不存在！")
 
 class TrainModel:
-    def __init__(self) -> None:
-        # self.basic_model = 
-        pass
+    def __init__(self):
 
+        self.basic_model = BASIC_MODEL
+        if not self.basic_model.exists():
+            raise FileNotFoundError(f"錯誤回報：找不到基礎模型檔案：{YOLO_MODEL_CHOOSE}")
+        else:
+            self.model = YOLO(self.basic_model)
+
+        self.traing_config = DATA_YAML_PATH
+        if not self.traing_config.exists():
+            raise FileNotFoundError(f"錯誤回報：找不到 {DATASET_FOLDER_NAME} 數據集的設定檔案")
+        else:
+            print(f"載入{DATASET_FOLDER_NAME} 數據集的設定檔案；路徑：{DATA_YAML_PATH}")
+        
+    def train(self,
+            epochs: int = 50,
+            imgsz: int = 640,
+            batch: int = 16,
+            workers: int=4,
+            save_period: int = None,
+            resume: bool = False,
+            ):
+        
+        train_args = {
+            "data":self.traing_config,  # 
+            "epochs":epochs,  # 訓練輪數:同張圖訓練幾輪
+            "imgsz":imgsz,   # 統一圖片大小:太大很吃內存
+            "batch":batch,   # 批次大小:炸顯存不要調太大，每次調整習慣用2的冪次方
+            "workers":workers, # 類似線程的東西，有餘裕在開大
+            "device": 0, # 調用GPU跑
+        }
+        # 動態加載參數:幾輪儲存一次
+        if save_period is not None and save_period > 0:
+            train_args["save_period"] = save_period
+        # 動態加載參數:繼續上一次訓練
+        if resume:
+            train_args["resume"] = resume
+
+        self.model.train(
+            **train_args
+        )
 if __name__ == "__main__":
-    print(BASIC_MODEL)
+
+    # resume預設是關閉的，要接續續練，參數要打進去
+    runTrain = TrainModel()
+    runTrain.train()
