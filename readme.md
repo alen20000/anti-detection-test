@@ -1,8 +1,20 @@
 # Experiment Note
 
-* 訓練basic_model : yolo_8
-* 訓練樣本: 一種圖形的三張標註圖片
-* 訓練步數: epochs=50,batch=16
+
+* 模型:
+<br> `Maple_yolo_v1`
+  * 訓練basic_model : yolo_8
+  * 訓練樣本: 一種圖形的三張標註圖片
+  * 訓練步數: epochs=50,batch=16
+
+  <br> `Maple_yolo_v2`
+  * 訓練basic_model : yolo_8
+  * 訓練樣本: 
+    來源站友`Spad0w`分享數據集:https://universe.roboflow.com/hoang-vy-y63kx/ld-ti0k3
+    <br> 樣本約1700張，加上左右轉角度擴增至5100張
+
+  * 訓練步數: epochs=100,batch=16
+
 * [NOTE] <br>cv2 + 光流 + 卡爾曼濾波 : False; 卡爾曼濾波是慣性預測，隨機運動抓不到；光流會累積誤差，幾次後就飄了<br>yolo+ ByteTrack: nullptr ;<br> yolo + OC-SORT: 效果比較好，ocsort有追朔修正(失聯前一幀)，多目標時以運動慣性做短追蹤+分辨
 
 * [NOTE] 思路i: 以前三秒白色目標時做定位在MOT時鎖定；思路ii:得到目標後，以前幀目標[x0:x1,y0:y1]+buffer 附近作追蹤，而不做多目標
