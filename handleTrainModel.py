@@ -92,6 +92,6 @@ class TrainModel:
 if __name__ == "__main__":
 
     # 接續訓練參數開關:True or False
-    resume = True
+    resume = False
     runTrain = TrainModel(resume)
-    runTrain.train(resume=resume,epochs=100)
+    runTrain.train()
