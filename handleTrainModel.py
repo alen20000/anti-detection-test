@@ -31,13 +31,30 @@ BASIC_MODEL = FOLDER_PATH / "models" / YOLO_MODEL_DICT[YOLO_MODEL_CHOOSE]
 '''
 
 class TrainModel:
-    def __init__(self):
+    def __init__(self, resume: bool = False):
+        
+        # 上次訓練模型的路徑
+        last_model_path = (
+        FOLDER_PATH / "runs" / "detect" / "train" / "weights" / "last.pt"
+        )
 
-        self.basic_model = BASIC_MODEL
-        if not self.basic_model.exists():
-            raise FileNotFoundError(f"錯誤回報：找不到基礎模型檔案：{YOLO_MODEL_CHOOSE}")
-        else:
-            self.model = YOLO(self.basic_model)
+        if resume and last_model_path.exists():
+            print(f"發現上次的訓練進度：{last_model_path}")
+            print("是否繼續上次的訓練")
+            answer = input("y / n: ")
+            if answer == "y":
+                print("繼續上次訓練")
+                self.basic_model = last_model_path
+                self.model = YOLO(self.basic_model)
+            else:
+                resume = False
+
+        if not resume:
+            self.basic_model = BASIC_MODEL
+            if not self.basic_model.exists():
+                raise FileNotFoundError(f"錯誤回報：找不到基礎模型檔案：{YOLO_MODEL_CHOOSE}")
+            else:
+                self.model = YOLO(self.basic_model)
 
         self.traing_config = DATA_YAML_PATH
         if not self.traing_config.exists():
@@ -74,6 +91,7 @@ class TrainModel:
         )
 if __name__ == "__main__":
 
-    # resume預設是關閉的，要接續續練，參數要打進去
-    runTrain = TrainModel()
-    runTrain.train()
+    # 接續訓練參數開關:True or False
+    resume = True
+    runTrain = TrainModel(resume)
+    runTrain.train(resume=resume,epochs=100)

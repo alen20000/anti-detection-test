@@ -4,7 +4,7 @@ import time
 from ultralytics import YOLO
 
 
-MODEL_PATH = "models/Maple_yolo_v1.pt"
+MODEL_PATH = "models/Maple_yolo_v2.pt"
 
 class AntiDetector:
     '''

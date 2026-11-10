@@ -1,7 +1,7 @@
 task: detect
 mode: train
-model: yolov8n.pt
-data: lie_detector-v1/data.yaml
+model: D:\Projects\Cat-Lab\Yolo_test\models\yolov8n.pt
+data: D:\Projects\Cat-Lab\Yolo_test\dataset\LD_yolov8\data.yaml
 epochs: 50
 time: null
 patience: 100
@@ -10,8 +10,8 @@ imgsz: 640
 save: true
 save_period: -1
 cache: false
-device: ''
-workers: 8
+device: '0'
+workers: 4
 project: null
 name: train
 exist_ok: false
